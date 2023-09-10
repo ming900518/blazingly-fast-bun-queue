@@ -1,8 +1,7 @@
-import express, { Response, Request } from "express";
 import { dlopen, suffix } from "bun:ffi";
+import { Hono } from "hono";
 
-const app = express();
-app.use(express.json());
+const app = new Hono();
 
 const {
     symbols: { init, addQueue, fetchResult, fetchInputVec, fetchResultVec }
@@ -16,24 +15,27 @@ const {
 
 init();
 
-app.post("/addQueue", (req: Request, res: Response) => {
-    const body = req.body;
+app.post("/addQueue", async (c) => {
+    const body = await c.req.json();
     const queueId = Number(addQueue(Buffer.from(body.data, "utf8")));
-    return res.send({ queueId });
+    return c.json({ queueId });
 });
 
-app.get("/checkStatus/:queueId", (req: Request, res: Response) => {
-    const queueId = req.params.queueId;
+app.get("/checkStatus/:queueId", (c) => {
+    const queueId = c.req.param("queueId");
     const result = JSON.parse(fetchResult(Number(queueId)));
-    return res.send(result);
+    return c.json(result);
 });
 
-app.get("/fetchInputVec", (_req: Request, res: Response) => {
-    return res.send(JSON.parse(fetchInputVec()));
+app.get("/fetchInputVec", (c) => {
+    return c.json(JSON.parse(fetchInputVec()));
 });
 
-app.get("/fetchResultVec", (_req: Request, res: Response) => {
-    return res.send(JSON.parse(fetchResultVec()));
+app.get("/fetchResultVec", (c) => {
+    return c.json(JSON.parse(fetchResultVec()));
 });
 
-app.listen(12345);
+export default {
+    port: 12345,
+    fetch: app.fetch
+};
