@@ -35,6 +35,7 @@ pub extern "C" fn init() {
                     process(data);
                 }
             });
+            queue_value.retain(Option::is_some);
         }
     });
 }
@@ -85,6 +86,20 @@ pub unsafe extern "C" fn fetchResult(req_number: i64) -> *const c_char {
             },
         );
     CString::new(serde_json::to_string(&data).unwrap_or_default())
+        .unwrap_or_default()
+        .into_raw()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn fetchInputVec() -> *const c_char {
+    CString::new(serde_json::to_string(&*QUEUE.get().unwrap().0.lock()).unwrap_or_default())
+        .unwrap_or_default()
+        .into_raw()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn fetchResultVec() -> *const c_char {
+    CString::new(serde_json::to_string(&*RESULT.read()).unwrap_or_default())
         .unwrap_or_default()
         .into_raw()
 }
