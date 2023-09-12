@@ -6,7 +6,7 @@ app.use(express.json());
 
 const {
     symbols: { init, addQueue, fetchResult, fetchInputVec, fetchResultVec }
-} = dlopen(`./libqueue.${suffix}`, {
+} = dlopen(`./queue/target/release/libqueue.${suffix}`, {
     init: {},
     addQueue: { args: ["cstring"], returns: ["i64"] },
     fetchResult: { args: ["i64"], returns: ["cstring"] },
